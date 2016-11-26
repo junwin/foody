@@ -18,8 +18,8 @@ server.listen(process.env.port || process.env.PORT || 80, function () {
   
 // Create chat bot
 var connector = new builder.ChatConnector({
-    appId: '1adb6c46-d3ad-4a6c-bf2e-edc69df81338',
-    appPassword: 'ViRRhcD9YtjKwo85EFjcXWE'
+    appId: '',
+    appPassword: ''
 });
 var bot = new builder.UniversalBot(connector);
 server.post('/api/messages', connector.listen());
@@ -89,39 +89,6 @@ bot.use(builder.Middleware.dialogVersion({ version: 1.0, resetCommand: /^reset/i
 bot.endConversationAction('bye', 'Bye :)', { matches: /^bye/i });
 bot.beginDialogAction('help', '/help', { matches: /^help/i });
 
-// Handle changes to the conversation participents
-bot.on('conversationUpdate', function (message) {
-    if (message.membersAdded) {
-        var membersAdded = message.membersAdded
-            .map((m) => {
-                var isSelf = m.id === message.address.bot.id;
-                return (isSelf ? message.address.bot.name : m.name) + ' (Id: ' + m.id + ')';
-            })
-            .join(', ');
-
-        var reply = new builder.Message()
-            .address(message.address)
-            .text('Welcome ' + membersAdded);
-        bot.send(reply);
-        console.log('Added Members' + membersAdded)
-    }
-
-    if (message.membersRemoved) {
-        var membersRemoved = message.membersRemoved
-            .map((m) => {
-                var isSelf = m.id === message.address.bot.id;
-                return (isSelf ? message.address.bot.name : m.name) + ' (Id: ' + m.id + ')';
-            })
-            .join(', ');
-
-        var reply = new builder.Message()
-            .address(message.address)
-            .text('The following members ' + membersRemoved + ' were removed or left the conversation :(');
-        bot.send(reply);
-        console.log('Removed Members' + membersRemoved)
-    }
-});
-
 
 // Install logging middleware
 
@@ -155,50 +122,30 @@ bot.use({
 
 bot.dialog('/', [
     function (session) {
-        if(session.message.text.toLowerCase() == 'help')
-        {
-            session.beginDialog('/help');
-        }
-        if(session.message.text.toLowerCase() == 'bill')
-        {
-            session.beginDialog('/receipt');
-        }
-        if(session.message.text.toLowerCase() == 'feedback')
-        {
-            session.beginDialog('/prompts');
-        }
-        if(session.message.text.toLowerCase() == 'start')
-        {
-            session.send('meeting timer is started:' + Date());
-            console.log('meeting started:' +  Date());
-            session.userData.StartedMeeting =  Date();      
-        }
-        if(session.message.text.toLowerCase() == 'end')
-        {         
-            session.userData.EndedMeeting =  Date();
-            x = Date.parse(session.userData.EndedMeeting);
-            y = Date.parse(session.userData.StartedMeeting);
-            z = elapsed(session);
-            var endMsg = 'meeting timer is ended:' + Date() + " : " + session.userData.StartedMeeting + ' elapsed:' + z;
-            session.send(endMsg);
-            console.log(endMsg);
-            session.beginDialog('/prompts');
-        }
-        //session.beginDialog('/help');
+        // Send a greeting and show help.
+        var card = new builder.HeroCard(session)
+            .title("Microsoft Bot Framework")
+            .text("Your bots - wherever your users are talking.")
+            .images([
+                 builder.CardImage.create(session, "http://docs.botframework.com/images/demo_bot_image.png")
+            ]);
+        var msg = new builder.Message(session).attachments([card]);
+        session.send(msg);
+        session.send("Hi... I'm the Microsoft Bot Framework demo bot for Skype. I can show you everything you can use our Bot Builder SDK to do on Skype.");
+        session.beginDialog('/help');
     },
     function (session, results) {
         // Display menu
-        //session.beginDialog('/menu');
+        session.beginDialog('/menu');
     },
     function (session, results) {
         // Always say goodbye
-        //session.send("Ok... See you later!");
+        session.send("Ok... See you later!");
     }
 ]);
-
 bot.dialog('/menu', [
     function (session) {
-        builder.Prompts.choice(session, "What demo would you like to run?", "prompts|picture|cards|list|carousel|receipt|actions|(quit)");
+        builder.Prompts.choice(session, "What would you todo?", "logfood|(quit)");
     },
     function (session, results) {
         if (results.response && results.response.entity != '(quit)') {
@@ -209,79 +156,31 @@ bot.dialog('/menu', [
             session.endDialog();
         }
     },
-    //function (session, results) {
+    function (session, results) {
         // The menu runs a loop until the user chooses to (quit).
-    //    session.replaceDialog('/menu');
-   // }
+        session.replaceDialog('/menu');
+    }
 ]).reloadAction('reloadMenu', null, { matches: /^menu|show menu/i });
 
 bot.dialog('/help', [
     function (session) {
-        session.endDialog("Global commands that are available anytime:\n\n* bill - Show the current meeting bill.\n* bye - End this conversation.\n* end - End meeting.\n*  start - Start meeting.\n* help - Displays these commands.");
+        session.endDialog("Global commands that are available anytime:\n\n* menu - Exits a demo and returns to the menu.\n* goodbye - End this conversation.\n* help - Displays these commands.");
     }
 ]);
 
-bot.dialog('/prompts', [
-    function (session, results) {
-        var style = builder.ListStyle.button;
-        builder.Prompts.choice(session, "Hey what did you think of the meeting?", "great|ok|meh", { listStyle: style });
-    },
-    function (session, results) {
-        //session.send("You chose '%s'", results.response.entity);
-        //session.endDialog(results.response.entity);
-        //results.entity.text;
-        session.endDialog();
-        console.log('option chosen:' + results.response.entity);
-        //builder.Promp.ts.confirm(session, "Prompts.confirm()\n\nSimple yes/no questions are possible. Answer yes or no now.");
-    },
-    function (session, results) {
-        var msg = new builder.Message(session);
-        session.endDialog(msg);
-    }
-]);
 
-function elapsed(session)
-{
-    session.userData.EndedMeeting =  Date();
-    x = Date.parse(session.userData.EndedMeeting);
-    y = Date.parse(session.userData.StartedMeeting);
-    z = (x -  y)/3600000;
-    return z.toFixed(3);
-}
-
-bot.dialog('/cards', [
+bot.dialog('/logfood', [
     function (session) {
-        session.send("You can use Hero & Thumbnail cards to send the user visually rich information...");
-
-        var msg = new builder.Message(session)
-            .textFormat(builder.TextFormat.xml)
-            .attachments([
-                new builder.HeroCard(session)
-                    .title("Hero Card")
-                    .subtitle("Space Needle")
-                    .text("The <b>Space Needle</b> is an observation tower in Seattle, Washington, a landmark of the Pacific Northwest, and an icon of Seattle.")
-                    .images([
-                        builder.CardImage.create(session, "https://upload.wikimedia.org/wikipedia/commons/thumb/7/7c/Seattlenighttimequeenanne.jpg/320px-Seattlenighttimequeenanne.jpg")
-                    ])
-                    .tap(builder.CardAction.openUrl(session, "https://en.wikipedia.org/wiki/Space_Needle"))
-            ]);
-        session.send(msg);
-
-        msg = new builder.Message(session)
-            .textFormat(builder.TextFormat.xml)
-            .attachments([
-                new builder.ThumbnailCard(session)
-                    .title("Thumbnail Card")
-                    .subtitle("Pikes Place Market")
-                    .text("<b>Pike Place Market</b> is a public market overlooking the Elliott Bay waterfront in Seattle, Washington, United States.")
-                    .images([
-                        builder.CardImage.create(session, "https://upload.wikimedia.org/wikipedia/en/thumb/2/2a/PikePlaceMarket.jpg/320px-PikePlaceMarket.jpg")
-                    ])
-                    .tap(builder.CardAction.openUrl(session, "https://en.wikipedia.org/wiki/Pike_Place_Market"))
-            ]);
-        session.endDialog(msg);
+        //session.send("Just follow the prompts and you can quit at any time by saying 'cancel'.");
+        builder.Prompts.text(session, "Tell me the food items, use a comma to separate multiple items.");
+    },
+    function (session, results) {
+        session.send("You entered '%s'", results.response);
+        session.endDialog();
     }
 ]);
+
+
 
 
 
