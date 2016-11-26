@@ -1,4 +1,4 @@
-# k3node
+# Foody
 
 This is adapted version of the Microsoft Bot Builder skype demo - see https://github.com/Microsoft/BotBuilder
 

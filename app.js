@@ -12,7 +12,7 @@ var builder = require('./core/');
 
 // Setup Restify Server
 var server = restify.createServer();
-server.listen(process.env.port || process.env.PORT || 80, function () {
+server.listen(process.env.port || process.env.PORT || 3978, function () {
    console.log('%s listening to %s', server.name, server.url); 
 });
   
@@ -175,7 +175,8 @@ bot.dialog('/logfood', [
         builder.Prompts.text(session, "Tell me the food items, use a comma to separate multiple items.");
     },
     function (session, results) {
-        session.send("You entered '%s'", results.response);
+        msg = session.message.user.id + " : " + session.message.timestamp + " : " + results.response;
+        session.send("You entered .'%s'", msg);
         session.endDialog();
     }
 ]);
