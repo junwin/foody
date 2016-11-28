@@ -191,7 +191,8 @@ bot.dialog('/logfood', [
     
         
         var foodRecord = {
-            userId:session.message.user.id,           
+            userId:session.message.user.id,   
+            userName: session.message.user.name,       
             timestamp:tsDate.getTime(),
             text:results.response,
             item:results.response,
@@ -343,7 +344,7 @@ var findDocuments = function(db, session, callback) {
   // Get the documents collection
   var collection = db.collection('foodrecords');
   // Find some documents
-  collection.find({}).toArray(function(err, docs) {
+  collection.find({userId:session.message.user.id}).toArray(function(err, docs) {
     assert.equal(err, null);
     callback(docs);
   });
