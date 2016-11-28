@@ -233,7 +233,7 @@ bot.dialog('/show', [
                 {
                     var recordDate = new Date(docs[i].timestamp);
                     localDate = convertUTCDateToLocalDate(recordDate);
-                    responseMsg = responseMsg + localdDate.toDateString() + ": " + docs[i].text + "\n\n";
+                    responseMsg = responseMsg + localDate.toDateString() + ": " + docs[i].text + "\n\n";
                     
                 }      
 
@@ -345,7 +345,7 @@ var findDocuments = function(db, session, callback) {
   // Get the documents collection
   var collection = db.collection('foodrecords');
   // Find some documents
-  collection.find({}).toArray(function(err, docs) {
+  collection.find({userId:session.message.user.id}).toArray(function(err, docs) {
     assert.equal(err, null);
     callback(docs);
   });
