@@ -187,7 +187,7 @@ bot.dialog('/logfood', [
         builder.Prompts.text(session, "Tell me the food items, use a comma to separate multiple items.");
     },
     function (session, results) {
-        var tsDate =new  Date(session.message.timestamp).getUTCDate();
+        var tsDate =new  Date(session.message.timestamp);
     
         
         var foodRecord = {
