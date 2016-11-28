@@ -136,14 +136,14 @@ bot.dialog('/', [
     function (session) {
         // Send a greeting and show help.
         var card = new builder.HeroCard(session)
-            .title("Microsoft Bot Framework")
-            .text("Your bots - wherever your users are talking.")
+            .title("Foody - the food tracking bot")
+            .text("track the things you eat the easy way.")
             .images([
                  builder.CardImage.create(session, "http://docs.botframework.com/images/demo_bot_image.png")
             ]);
         var msg = new builder.Message(session).attachments([card]);
         session.send(msg);
-        session.send("Hi... I'm the Microsoft Bot Framework demo bot for Skype. I can show you everything you can use our Bot Builder SDK to do on Skype.");
+        session.send("Hi... I am foody a bot for Skype. I can help you track what you eat here on Skype.");
         session.beginDialog('/help');
     },
     function (session, results) {
