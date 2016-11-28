@@ -5,6 +5,13 @@
 
 var restify = require('restify');
 var builder = require('./core/');
+var MongoClient = require('mongodb').MongoClient
+  , assert = require('assert');
+
+// Connection URL
+//var url = 'mongodb://localhost:27017/myproject';
+var url = 'mongodb://k3node:7ljZMNqhwO1vMZuz3rwOiMM11bSYSgwQL76r0xiLiC1q95LGIHLA6lLyi5qDtWc5JnIErnixiblkktxuF9sxBA==@k3node.documents.azure.com:10250/foody?ssl=true'
+//
 
 //=========================================================
 // Bot Setup 
@@ -14,6 +21,11 @@ var builder = require('./core/');
 var server = restify.createServer();
 server.listen(process.env.port || process.env.PORT || 3978, function () {
    console.log('%s listening to %s', server.name, server.url); 
+});
+
+MongoClient.connect(url, function(err, db) {
+  assert.equal(null, err);
+  console.log("Connected successfully to server");
 });
   
 // Create chat bot
@@ -145,7 +157,7 @@ bot.dialog('/', [
 ]);
 bot.dialog('/menu', [
     function (session) {
-        builder.Prompts.choice(session, "What would you todo?", "logfood|(quit)");
+        builder.Prompts.choice(session, "What would you todo?", "logfood|show|(quit)");
     },
     function (session, results) {
         if (results.response && results.response.entity != '(quit)') {
@@ -175,8 +187,60 @@ bot.dialog('/logfood', [
         builder.Prompts.text(session, "Tell me the food items, use a comma to separate multiple items.");
     },
     function (session, results) {
+        var tsDate =new  Date(session.message.timestamp);
+    
+        
+        var foodRecord = {
+            userId:session.message.user.id,           
+            timestamp:tsDate.getTime(),
+            text:results.response,
+            item:results.response,
+            qty:0,
+            units:"",
+            foodValue:"",
+            calories:0
+        };
+
         msg = session.message.user.id + " : " + session.message.timestamp + " : " + results.response;
         session.send("You entered .'%s'", msg);
+
+        MongoClient.connect(url, function(err, db) {
+            assert.equal(null, err);
+            
+            console.log("Connected successfully to server");
+            insertDocuments(db, foodRecord, function() {           
+            db.close();
+            });
+        });
+
+        session.endDialog();
+    }
+]);
+
+
+bot.dialog('/show', [
+    function (session, results) {
+
+
+        MongoClient.connect(url, function(err, db) {
+            assert.equal(null, err);
+            
+            console.log("Connected successfully to server");
+            findDocuments(db, session, function(docs) {  
+                var responseMsg = "";
+                for (var i in docs)
+                {
+                    var recordDate = new Date(docs[i].timestamp);
+                    responseMsg = responseMsg + recordDate.toDateString() + ": " + docs[i].text + "\n\n";
+                    
+                }      
+
+
+                session.send(responseMsg)  ; 
+                db.close();
+            });
+        });
+
         session.endDialog();
     }
 ]);
@@ -257,3 +321,30 @@ bot.dialog('/weather', [
     }
 ]);
 bot.beginDialogAction('weather', '/weather');   // <-- no 'matches' option means this can only be triggered by a button.
+
+//  Mongo CRUD functions
+var insertDocuments = function(db, foodRecord, callback) {
+  // Get the documents collection
+  var collection = db.collection('foodrecords');
+  // Insert some documents
+  collection.insertMany([
+    foodRecord
+  ], function(err, result) {
+    assert.equal(err, null);
+    assert.equal(1, result.result.n);
+    assert.equal(1, result.ops.length);
+    console.log("Inserted 1 documents into the collection");
+    callback(result);
+  });
+}
+
+
+var findDocuments = function(db, session, callback) {
+  // Get the documents collection
+  var collection = db.collection('foodrecords');
+  // Find some documents
+  collection.find({}).toArray(function(err, docs) {
+    assert.equal(err, null);
+    callback(docs);
+  });
+}

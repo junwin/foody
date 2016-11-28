@@ -13,6 +13,10 @@ npm install
 you can test the bot using: https://download.botframework.com/bf-v3/tools/emulator/publish.htm
 
 use url: http://localhost/api/messages
+
+You need to have Mongo DB available e.g.
+"C:\Program Files\MongoDB\Server\3.2\bin\mongod.exe" --dbpath d:\mongodb\data
+
 use app id  1adb6c46-d3ad-4a6c-bf2e-edc69df81338
 use pwd ViRRhcD9YtjKwo85EFjcXWE
 
