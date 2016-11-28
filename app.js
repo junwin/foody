@@ -10,7 +10,7 @@ var MongoClient = require('mongodb').MongoClient
 
 // Connection URL
 //var url = 'mongodb://localhost:27017/myproject';
-var url = 'mongodb://k3node:7ljZMNqhwO1vMZuz3rwOiMM11bSYSgwQL76r0xiLiC1q95LGIHLA6lLyi5qDtWc5JnIErnixiblkktxuF9sxBA==@k3node.documents.azure.com:10250/foody?ssl=true'
+var url =  process.env.MONGO_CONN_URL
 //
 
 //=========================================================
@@ -30,8 +30,8 @@ MongoClient.connect(url, function(err, db) {
   
 // Create chat bot
 var connector = new builder.ChatConnector({
-    appId: '',
-    appPassword: ''
+    appId: process.env.MICROSOFT_APP_ID,
+    appPassword: process.env.MICROSOFT_APP_PASSWORD
 });
 var bot = new builder.UniversalBot(connector);
 server.post('/api/messages', connector.listen());
