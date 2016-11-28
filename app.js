@@ -193,7 +193,7 @@ bot.dialog('/logfood', [
         var foodRecord = {
             userId:session.message.user.id,   
             userName: session.message.user.name,       
-            timestamp:tsDate.getTime(),
+            timestamp:tsDate,
             text:results.response,
             item:results.response,
             qty:0,
