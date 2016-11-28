@@ -187,7 +187,7 @@ bot.dialog('/logfood', [
         builder.Prompts.text(session, "Tell me the food items, use a comma to separate multiple items.");
     },
     function (session, results) {
-        var tsDate =new  Date(session.message.timestamp);
+        var tsDate =new  Date(session.message.timestamp).getUTCDate();
     
         
         var foodRecord = {
@@ -232,7 +232,8 @@ bot.dialog('/show', [
                 for (var i in docs)
                 {
                     var recordDate = new Date(docs[i].timestamp);
-                    responseMsg = responseMsg + recordDate.toDateString() + ": " + docs[i].text + "\n\n";
+                    localDate = convertUTCDateToLocalDate(recordDate);
+                    responseMsg = responseMsg + localdDate.toDateString() + ": " + docs[i].text + "\n\n";
                     
                 }      
 
@@ -349,3 +350,18 @@ var findDocuments = function(db, session, callback) {
     callback(docs);
   });
 }
+
+
+// Date functions
+function convertUTCDateToLocalDate(date) {
+    var newDate = new Date(date.getTime()+date.getTimezoneOffset()*60*1000);
+
+    var offset = date.getTimezoneOffset() / 60;
+    var hours = date.getHours();
+
+    newDate.setHours(hours - offset);
+
+    return newDate;   
+}
+
+
