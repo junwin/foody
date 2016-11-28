@@ -200,8 +200,8 @@ bot.dialog('/logfood', [
             foodValue:"",
             calories:0
         };
-
-        msg = session.message.user.id + " : " + session.message.timestamp + " : " + results.response;
+        session.message.user.name
+        msg = session.message.user.id + " : " + session.message.user.name + " : " + session.message.timestamp + " : " + results.response;
         session.send("You entered .'%s'", msg);
 
         MongoClient.connect(url, function(err, db) {

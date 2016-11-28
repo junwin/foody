@@ -17,19 +17,11 @@ use url: http://localhost/api/messages
 You need to have Mongo DB available e.g.
 "C:\Program Files\MongoDB\Server\3.2\bin\mongod.exe" --dbpath d:\mongodb\data
 
-use app id  1adb6c46-d3ad-4a6c-bf2e-edc69df81338
-use pwd ViRRhcD9YtjKwo85EFjcXWE
-
-Changes pushed to the repo will be automatically deployed to the Azure cloud at http://k3node.azurewebsites.net
 
 Bots need to be registered this is done at https://dev.botframework.com/ and has been done for the sample.
 
 You can add this to your own Skype contact list with the following link:
-https://join.skype.com/bot/1adb6c46-d3ad-4a6c-bf2e-edc69df81338
-
-Embedded with 
-
-<a href='https://join.skype.com/bot/1adb6c46-d3ad-4a6c-bf2e-edc69df81338'><img src='https://dev.botframework.com/Client/Images/Add-To-Skype-Buttons.png'/></a>
+https://join.skype.com/bot/81eea04c-a376-4933-adbc-57e33579993c
 
 
 
