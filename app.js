@@ -11,6 +11,7 @@ var MongoClient = require('mongodb').MongoClient
 // Connection URL
 //var url = 'mongodb://localhost:27017/myproject';
 var url =  process.env.MONGO_CONN_URL
+url =  process.env.MONGO_CONN_URL || "mongodb://localhost:27017/myproject";
 //
 
 //=========================================================
