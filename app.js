@@ -9,9 +9,7 @@ var MongoClient = require('mongodb').MongoClient
   , assert = require('assert');
 
 // Connection URL
-//var url = 'mongodb://localhost:27017/myproject';
-var url =  process.env.MONGO_CONN_URL
-url =  process.env.MONGO_CONN_URL || "mongodb://localhost:27017/myproject";
+var url =  process.env.MONGO_CONN_URL || "mongodb://localhost:27017/myproject";
 //
 
 //=========================================================
@@ -137,7 +135,7 @@ bot.dialog('/', [
     function (session) {
         // Send a greeting and show help.
         var card = new builder.HeroCard(session)
-            .title("Foody - the food tracking bot")
+            .title("Foody - the food tracking bot (Pre-Release 0.1 fun edition)")
             .text("track the things you eat the easy way.")
             .images([
                  builder.CardImage.create(session, "http://docs.botframework.com/images/demo_bot_image.png")
@@ -189,20 +187,26 @@ bot.dialog('/logfood', [
     },
     function (session, results) {
         var tsDate =new  Date(session.message.timestamp);
-    
+        var inputLine = results.response;
+        var foodItems = inputLine.split(",");
+        var foodArray = [];
+        for(var item in foodItems)
+        {
+            
+            var foodRecord = {
+                userId:session.message.user.id,   
+                userName: session.message.user.name,       
+                timestamp:tsDate,
+                text:foodItems[item],
+                item:foodItems[item],
+                qty:0,
+                units:"",
+                foodValue:getPoints(foodItems[item]),
+                calories:0
+            };
+            foodArray.push(foodRecord);
+        }
         
-        var foodRecord = {
-            userId:session.message.user.id,   
-            userName: session.message.user.name,       
-            timestamp:tsDate,
-            text:results.response,
-            item:results.response,
-            qty:0,
-            units:"",
-            foodValue:"",
-            calories:0
-        };
-        session.message.user.name
         msg = session.message.user.id + " : " + session.message.user.name + " : " + session.message.timestamp + " : " + results.response;
         session.send("You entered .'%s'", msg);
 
@@ -210,10 +214,11 @@ bot.dialog('/logfood', [
             assert.equal(null, err);
             
             console.log("Connected successfully to server");
-            insertDocuments(db, foodRecord, function() {           
+            insertDocuments(db, foodArray, function() {           
             db.close();
             });
         });
+    
 
         session.endDialog();
     }
@@ -226,9 +231,10 @@ bot.dialog('/show', [
 
         MongoClient.connect(url, function(err, db) {
             assert.equal(null, err);
-            
+            var endDate = Date.now();
+            var startDate = endDate - 7*24*3600000;
             console.log("Connected successfully to server");
-            findDocuments(db, session, function(docs) {  
+            findDocuments(db, session, startDate, endDate, function(docs) {  
                 var responseMsg = "";
                 for (var i in docs)
                 {
@@ -325,28 +331,43 @@ bot.dialog('/weather', [
 ]);
 bot.beginDialogAction('weather', '/weather');   // <-- no 'matches' option means this can only be triggered by a button.
 
+// Interpretation - will swith to LUIS soon
+
+var getPoints = function(foodEntryText) {
+    var pos = foodEntryText.indexOf("p=") ;
+    if(pos >=0)
+    {
+        val = foodEntryText.substring(pos+2, pos+4);
+        return val;
+    }
+    
+    return 0;
+    
+}
+
+
 //  Mongo CRUD functions
 var insertDocuments = function(db, foodRecord, callback) {
   // Get the documents collection
   var collection = db.collection('foodrecords');
   // Insert some documents
-  collection.insertMany([
+  collection.insertMany(
     foodRecord
-  ], function(err, result) {
+  , function(err, result) {
     assert.equal(err, null);
-    assert.equal(1, result.result.n);
-    assert.equal(1, result.ops.length);
+    assert.equal(foodRecord.length, result.result.n);
+    assert.equal(foodRecord.length, result.ops.length);
     console.log("Inserted 1 documents into the collection");
     callback(result);
   });
 }
 
 
-var findDocuments = function(db, session, callback) {
+var findDocuments = function(db, session, startDate, endDate, callback) {
   // Get the documents collection
   var collection = db.collection('foodrecords');
   // Find some documents
-  collection.find({userId:session.message.user.id}).toArray(function(err, docs) {
+  collection.find({ "timestamp" : { "$gte" : new Date(startDate), "$lt" : new Date(endDate) }}).toArray(function(err, docs) {
     assert.equal(err, null);
     callback(docs);
   });

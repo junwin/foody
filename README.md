@@ -16,7 +16,7 @@ use url: http://localhost/api/messages
 
 You need to have Mongo DB available e.g.
 "C:\Program Files\MongoDB\Server\3.2\bin\mongod.exe" --dbpath d:\mongodb\data
-
+"C:\Program Files\MongoDB\Server\3.2\bin\mongo.exe" 
 
 Bots need to be registered this is done at https://dev.botframework.com/ and has been done for the sample.
 
