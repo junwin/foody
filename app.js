@@ -239,10 +239,10 @@ bot.dialog('/show', [
                 for (var i in docs)
                 {
                     var recordDate = new Date(docs[i].timestamp);
-                    localDate = convertUTCDateToLocalDate(recordDate);
-                    responseMsg = responseMsg + localDate.toDateString() + ": " + docs[i].text + "\n\n";
                     
-                }      
+                    responseMsg = responseMsg + recordDate.toDateString() + ": " + docs[i].text + "\n\n";
+                    
+                }       
 
 
                 session.send(responseMsg)  ; 
@@ -376,12 +376,14 @@ var findDocuments = function(db, session, startDate, endDate, callback) {
 
 // Date functions
 function convertUTCDateToLocalDate(date) {
-    var newDate = new Date(date.getTime()+date.getTimezoneOffset()*60*1000);
 
-    var offset = date.getTimezoneOffset() / 60;
-    var hours = date.getHours();
+    var offset = date.getTimezoneOffset()*60*1000;
+    var newDate = new Date(date.getTime()-offset);
 
-    newDate.setHours(hours - offset);
+    //var offset = date.getTimezoneOffset() / 60;
+    //var hours = date.getHours();
+
+    //newDate.setHours(hours - offset);
 
     return newDate;   
 }

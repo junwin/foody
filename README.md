@@ -15,8 +15,15 @@ you can test the bot using: https://download.botframework.com/bf-v3/tools/emulat
 use url: http://localhost/api/messages
 
 You need to have Mongo DB available e.g.
+Local DB
 "C:\Program Files\MongoDB\Server\3.2\bin\mongod.exe" --dbpath d:\mongodb\data
+
+Start Mongo shell
 "C:\Program Files\MongoDB\Server\3.2\bin\mongo.exe" 
+
+Query for fooditems
+use myproject
+db.foodrecords.find({ "timestamp" : { "$gte" : ISODate("2016-11-01T00:00:00Z"), "$lt" : ISODate("2017-10-02T00:00:00Z") }})
 
 Bots need to be registered this is done at https://dev.botframework.com/ and has been done for the sample.
 
