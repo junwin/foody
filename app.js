@@ -228,11 +228,18 @@ bot.dialog('/logfood', [
 bot.dialog('/show', [
     function (session, results) {
 
+        var numberOfDays = 2;
+        if(session.message.text.indexOf("week")>=0) {
+            numberOfDays = 7;
+        }
+        if(session.message.text.indexOf("day")>=0) {
+            numberOfDays = 1;
+        }
 
         MongoClient.connect(url, function(err, db) {
             assert.equal(null, err);
             var endDate = Date.now();
-            var startDate = endDate - 7*24*3600000;
+            var startDate = endDate - numberOfDays * 24 * 3600000;
             console.log("Connected successfully to server");
             findDocuments(db, session, startDate, endDate, function(docs) {  
                 var responseMsg = "";
