@@ -243,15 +243,27 @@ bot.dialog('/show', [
             console.log("Connected successfully to server");
             findDocuments(db, session, startDate, endDate, function(docs) {  
                 var responseMsg = "";
+                var totFoodValue =0;
+                var currDay = -1;
+                 
                 for (var i in docs)
                 {
                     var recordDate = new Date(docs[i].timestamp);
-                    
+                    if (currDay == -1) {
+                        currDay = recordDate.getDay();
+                    }
+                    if(currDay != recordDate.getDay()) {
+                        currDay = recordDate.getDay();
+                        responseMsg = responseMsg + "foodValue:" + totFoodValue + "\n\n";
+                        totFoodValue =0;
+                    }
+
+                    totFoodValue += parseInt(docs[i].foodValue);
                     responseMsg = responseMsg + convertUTCDateToLocalDate(recordDate).toDateString() + ": " + docs[i].text + "\n\n";
                     
                 }       
 
-
+                responseMsg = responseMsg + "foodValue:" + totFoodValue + "\n\n";        
                 session.send(responseMsg)  ; 
                 db.close();
             });
