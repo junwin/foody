@@ -240,7 +240,7 @@ bot.dialog('/show', [
                 {
                     var recordDate = new Date(docs[i].timestamp);
                     
-                    responseMsg = responseMsg + convertUTCDateToLocalDate(recordDate) + ": " + docs[i].text + "\n\n";
+                    responseMsg = responseMsg + convertUTCDateToLocalDate(recordDate).toDateString() + ": " + docs[i].text + "\n\n";
                     
                 }       
 
@@ -380,11 +380,12 @@ function convertUTCDateToLocalDate(date) {
     var offset = date.getTimezoneOffset()*60*1000;
     if(offset ==0)
     {
+        // force it to work on skype for US Central grrrr.
         offset = 6*3600000;
     }
     var newDate = new Date(date.getTime()-offset);
 
-    console.log('date: %s  offset: %s  newDate %s',date, offset, newDate); 
+    //console.log('date: %s  offset: %s  newDate %s',date, offset, newDate); 
     //var offset = date.getTimezoneOffset() / 60;
     //var hours = date.getHours();
 
