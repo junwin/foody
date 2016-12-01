@@ -378,6 +378,10 @@ var findDocuments = function(db, session, startDate, endDate, callback) {
 function convertUTCDateToLocalDate(date) {
 
     var offset = date.getTimezoneOffset()*60*1000;
+    if(offset =0)
+    {
+        offset -= 6*3600000;
+    }
     var newDate = new Date(date.getTime()-offset);
 
     console.log('date: %s  offset: %s  newDate %s',date, offset, newDate); 
