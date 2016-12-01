@@ -380,7 +380,7 @@ function convertUTCDateToLocalDate(date) {
     var offset = date.getTimezoneOffset()*60*1000;
     if(offset =0)
     {
-        offset -= 6*3600000;
+        offset = 6*3600000;
     }
     var newDate = new Date(date.getTime()-offset);
 
