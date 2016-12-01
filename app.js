@@ -240,7 +240,7 @@ bot.dialog('/show', [
                 {
                     var recordDate = new Date(docs[i].timestamp);
                     
-                    responseMsg = responseMsg + recordDate.toDateString() + ": " + docs[i].text + "\n\n";
+                    responseMsg = responseMsg + recordDate + ": " + docs[i].text + "\n\n";
                     
                 }       
 
