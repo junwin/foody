@@ -249,11 +249,12 @@ bot.dialog('/show', [
                 for (var i in docs)
                 {
                     var recordDate = new Date(docs[i].timestamp);
+                    var tl = convertUTCDateToLocalDate(recordDate);
                     if (currDay == -1) {
-                        currDay = recordDate.getDay();
+                        currDay = tl.getDay();
                     }
-                    if(currDay != recordDate.getDay()) {
-                        currDay = recordDate.getDay();
+                    if(currDay != tl.getDay()) {
+                        currDay = tl.getDay();
                         responseMsg = responseMsg + "foodValue:" + totFoodValue + "\n\n";
                         totFoodValue =0;
                     }
