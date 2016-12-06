@@ -8,6 +8,8 @@ var builder = require('./core/');
 var MongoClient = require('mongodb').MongoClient
   , assert = require('assert');
 
+var DS = require('./dataservice');
+
 // Connection URL
 var url =  process.env.MONGO_CONN_URL || "mongodb://localhost:27017/myproject";
 //
@@ -191,12 +193,12 @@ bot.dialog('/logfood', [
         var foodItems = inputLine.split(",");
         var foodArray = [];
         for(var item in foodItems)
-        {
-            
+        {           
             var foodRecord = {
                 userId:session.message.user.id,   
                 userName: session.message.user.name,       
                 timestamp:tsDate,
+                foodRecordDate:tsDate,
                 text:foodItems[item],
                 item:foodItems[item],
                 qty:0,
@@ -210,16 +212,7 @@ bot.dialog('/logfood', [
         msg = session.message.user.id + " : " + session.message.user.name + " : " + session.message.timestamp + " : " + results.response;
         session.send("You entered .'%s'", msg);
 
-        MongoClient.connect(url, function(err, db) {
-            assert.equal(null, err);
-            
-            console.log("Connected successfully to server");
-            insertDocuments(db, foodArray, function() {           
-            db.close();
-            });
-        });
-    
-
+        DS.saveFoodItems(url, foodArray);
         session.endDialog();
     }
 ]);
@@ -235,39 +228,34 @@ bot.dialog('/show', [
         if(session.message.text.indexOf("day")>=0) {
             numberOfDays = 1;
         }
+        var endDate = Date.now();
+        var startDate = endDate - numberOfDays * 24 * 3600000;
+        DS.getFoodItems(url, session.message.user.id, startDate, endDate, function(docs){
+            var responseMsg = "";
+            var totFoodValue =0;
+            var currDay = -1;
+                
+            for (var i in docs)
+            {
+                var recordDate = new Date(docs[i].timestamp);
+                var tl = convertUTCDateToLocalDate(recordDate);
+                if (currDay == -1) {
+                    currDay = tl.getDay();
+                }
+                if(currDay != tl.getDay()) {
+                    currDay = tl.getDay();
+                    responseMsg = responseMsg + "foodValue:" + totFoodValue + "\n\n";
+                    totFoodValue =0;
+                }
 
-        MongoClient.connect(url, function(err, db) {
-            assert.equal(null, err);
-            var endDate = Date.now();
-            var startDate = endDate - numberOfDays * 24 * 3600000;
-            console.log("Connected successfully to server");
-            findDocuments(db, session, startDate, endDate, function(docs) {  
-                var responseMsg = "";
-                var totFoodValue =0;
-                var currDay = -1;
-                 
-                for (var i in docs)
-                {
-                    var recordDate = new Date(docs[i].timestamp);
-                    var tl = convertUTCDateToLocalDate(recordDate);
-                    if (currDay == -1) {
-                        currDay = tl.getDay();
-                    }
-                    if(currDay != tl.getDay()) {
-                        currDay = tl.getDay();
-                        responseMsg = responseMsg + "foodValue:" + totFoodValue + "\n\n";
-                        totFoodValue =0;
-                    }
+                totFoodValue += parseInt(docs[i].foodValue);
+                responseMsg = responseMsg + convertUTCDateToLocalDate(recordDate).toDateString() + ": " + docs[i].text + "\n\n";
+                
+            }       
 
-                    totFoodValue += parseInt(docs[i].foodValue);
-                    responseMsg = responseMsg + convertUTCDateToLocalDate(recordDate).toDateString() + ": " + docs[i].text + "\n\n";
-                    
-                }       
-
-                responseMsg = responseMsg + "foodValue:" + totFoodValue + "\n\n";        
-                session.send(responseMsg)  ; 
-                db.close();
-            });
+            responseMsg = responseMsg + "foodValue:" + totFoodValue + "\n\n";        
+            session.send(responseMsg)  ; 
+            //db.close();
         });
 
         session.endDialog();

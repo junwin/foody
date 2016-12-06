@@ -10,6 +10,9 @@ cd k3node
 
 npm install
 
+Jasmine is used for testing:
+npm install --save-dev jasmine
+
 you can test the bot using: https://download.botframework.com/bf-v3/tools/emulator/publish.htm
 
 use url: http://localhost/api/messages
