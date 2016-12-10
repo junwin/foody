@@ -37,6 +37,21 @@ var connector = new builder.ChatConnector({
 var bot = new builder.UniversalBot(connector);
 server.post('/api/messages', connector.listen());
 
+//http://localhost:3978/foodrecords/2c1c7fa3/5
+server.get('/foodrecords/:userId/:numberOfDays', getFoodRecs);
+
+function getFoodRecs(req, res, next) {
+    var numberOfDays = parseInt(req.params.numberOfDays);
+    var endDate = Date.now();
+    var startDate = endDate - numberOfDays * 24 * 3600000;
+
+    DS.getFoodItems(url, req.params.userId, startDate, endDate, function(docs) {    
+         res.send(JSON.stringify(docs));
+    });
+  next();
+}
+
+
 
 //==========.===============================================
 // Activity Events
@@ -191,6 +206,7 @@ bot.dialog('/logfood', [
         var tsDate =new  Date(session.message.timestamp);
         var inputLine = results.response;
         var foodItems = inputLine.split(",");
+        var foodDate = getFoodDate(inputLine);
         var foodArray = [];
         for(var item in foodItems)
         {           
@@ -198,13 +214,13 @@ bot.dialog('/logfood', [
                 userId:session.message.user.id,   
                 userName: session.message.user.name,       
                 timestamp:tsDate,
-                foodRecordDate:tsDate,
+                foodRecordDate:foodDate,
                 text:foodItems[item],
                 item:foodItems[item],
                 qty:0,
                 units:"",
                 foodValue:getPoints(foodItems[item]),
-                calories:0
+                calories:getCalories(foodItems[item])
             };
             foodArray.push(foodRecord);
         }
@@ -237,8 +253,9 @@ bot.dialog('/show', [
                 
             for (var i in docs)
             {
-                var recordDate = new Date(docs[i].timestamp);
-                var tl = convertUTCDateToLocalDate(recordDate);
+                var recordDate = new Date(docs[i].foodRecordDate);
+                var tl = recordDate;
+                //var tl = convertUTCDateToLocalDate(recordDate);
                 if (currDay == -1) {
                     currDay = tl.getDay();
                 }
@@ -249,7 +266,8 @@ bot.dialog('/show', [
                 }
 
                 totFoodValue += parseInt(docs[i].foodValue);
-                responseMsg = responseMsg + convertUTCDateToLocalDate(recordDate).toDateString() + ": " + docs[i].text + "\n\n";
+                //responseMsg = responseMsg + convertUTCDateToLocalDate(recordDate).toDateString() + ": " + docs[i].text + "\n\n";
+                responseMsg = responseMsg + recordDate.toDateString() + ": " + docs[i].text + "\n\n";
                 
             }       
 
@@ -346,6 +364,65 @@ var getPoints = function(foodEntryText) {
     if(pos >=0)
     {
         val = foodEntryText.substring(pos+2, pos+4);
+        return val;
+    }
+    
+    return 0;
+    
+}
+
+
+var getNextKVP = function(entryText) {
+
+    var kvpParts = entryText.split(":");
+    var kvp;
+    if(kvpParts.length > 1 ) {
+        var kvp = {
+                key: kvpParts[0], 
+                value:  getNextWord(kvpParts[1])
+        }
+
+    }
+    return kvp;
+}
+
+module.exports.getNextKVP = getNextKVP;
+
+var getNextWord = function(text) {
+    // wordbreaks are " ", "," or end of text
+    var word = "";
+    for (var i =0; i < text.length; i++) {
+        if (text[i] == " " || text[i] == ",") {
+            break;
+        }
+        word += text[i];
+    }
+    return word;
+}
+
+
+
+module.exports.getNextWord = getNextWord;
+
+var getFoodDate = function(foodEntryText) {
+    var pos = foodEntryText.indexOf("d:") ;
+    if(pos >=0)
+    {
+        var kvp = getNextKVP(foodEntryText.substring(pos));
+        val = new Date( kvp.value);
+        return val;
+    }
+    
+    return new Date();
+    
+}
+module.exports.getFoodDate = getFoodDate;
+
+var getCalories = function(foodEntryText) {
+    var pos = foodEntryText.indexOf("c=") ;
+    if(pos >=0)
+    {
+        val = foodEntryText.substring(pos+2, pos+5);
         return val;
     }
     

@@ -1,6 +1,17 @@
 var MongoClient = require('mongodb').MongoClient
   , assert = require('assert');
 
+var ds = function(mongoUrl) {
+    this.url = mongoUrl;
+    this.saveVal = "xyxyxy";
+    this.save = function(zz) {
+        this.saveVal = zz;
+    }
+
+}
+
+module.exports.ds = ds;
+
 // Save a set of food items
 var saveFoodItems = function(url, foodArray) {
 
@@ -45,20 +56,6 @@ var getFoodItems = function(url, userId, startDate, endDate, callback) {
 module.exports.getFoodItems = getFoodItems;
 
 
-/*
-db.bios.find(
-   {
-      awards: {
-                $elemMatch: {
-                     award: "Turing Award",
-                     year: { $gt: 1980 }
-                }
-      }
-   }
-)
-
-*/
-
 var findDocuments = function(db, userIdent, startDate, endDate, callback) {
   // Get the documents collection
   var collection = db.collection('foodrecords');
@@ -66,7 +63,7 @@ var findDocuments = function(db, userIdent, startDate, endDate, callback) {
   // ,{ "userId" : userIdent }
   collection.find( {
           "timestamp" : { "$gte" : new Date(startDate), "$lt" : new Date(endDate) }, "userId" : userIdent      
-    }  ).toArray(function(err, docs) {
+    }  ).sort({foodRecordDate: 1}).toArray(function(err, docs) {
     assert.equal(err, null);
     db.close();
     callback(docs);

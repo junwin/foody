@@ -16,6 +16,17 @@
             "request": "attach",
             "name": "Attach to Process",
             "port": 5858
+        },
+        {
+            "name": "Jasmine-Node Debugging",
+            "cwd": "${workspaceRoot}",
+            "program": "${workspaceRoot}/node_modules/jasmine-node/lib/jasmine-node/cli.js",
+            "request": "launch",
+            "type": "node",
+            "args": [
+                "test/spec/dataservice/dataserviceSpec.js",
+                "test/spec/foody/foodySpec.js"
+            ]
         }
     ]
 }
