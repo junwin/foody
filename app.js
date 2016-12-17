@@ -9,6 +9,7 @@ var MongoClient = require('mongodb').MongoClient
   , assert = require('assert');
 
 var DS = require('./dataservice');
+var ResponseBuilder = require('./responserBuilder');
 
 // Connection URL
 var url =  process.env.MONGO_CONN_URL || "mongodb://localhost:27017/myproject";
@@ -247,31 +248,9 @@ bot.dialog('/show', [
         var endDate = Date.now();
         var startDate = endDate - numberOfDays * 24 * 3600000;
         DS.getFoodItems(url, session.message.user.id, startDate, endDate, function(docs){
-            var responseMsg = "";
-            var totFoodValue =0;
-            var currDay = -1;
-                
-            for (var i in docs)
-            {
-                var recordDate = new Date(docs[i].foodRecordDate);
-                var tl = recordDate;
-                //var tl = convertUTCDateToLocalDate(recordDate);
-                if (currDay == -1) {
-                    currDay = tl.getDay();
-                }
-                if(currDay != tl.getDay()) {
-                    currDay = tl.getDay();
-                    responseMsg = responseMsg + "foodValue:" + totFoodValue + "\n\n";
-                    totFoodValue =0;
-                }
-
-                totFoodValue += parseInt(docs[i].foodValue);
-                //responseMsg = responseMsg + convertUTCDateToLocalDate(recordDate).toDateString() + ": " + docs[i].text + "\n\n";
-                responseMsg = responseMsg + recordDate.toDateString() + ": " + docs[i].text + "\n\n";
-                
-            }       
-
-            responseMsg = responseMsg + "foodValue:" + totFoodValue + "\n\n";        
+            //var responseMsg = "";
+            var responseMsg = ResponseBuilder.buildResponse(docs);
+                 
             session.send(responseMsg)  ; 
             //db.close();
         });

@@ -4,9 +4,9 @@ This is adapted version of the Microsoft Bot Builder skype demo - see https://gi
 
 You will need to have npm installed: https://www.npmjs.com/
 
-git clone https://github.com/junwin/k3node
+git clone https://github.com/junwin/foody
 
-cd k3node
+cd foody
 
 npm install
 
