@@ -4,11 +4,18 @@
     "module": "commonjs",
     "moduleResolution": "node",
     "sourceMap": true,
+    "outDir": "dist",
+    "sourceRoot": "src",
     "emitDecoratorMetadata": true,
     "experimentalDecorators": true,
     "lib": [ "es2015", "dom" ],
     "noImplicitAny": true,
     "suppressImplicitAnyIndexErrors": true,
     "types": ["node"]
-  }
+  },
+  "exclude": [
+        "node_modules",
+        "core"
+    ]
+
 }

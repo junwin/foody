@@ -8,8 +8,10 @@ var builder = require('./core/');
 var MongoClient = require('mongodb').MongoClient
   , assert = require('assert');
 
-var DS = require('./dataservice');
-var ResponseBuilder = require('./responserBuilder');
+var DS = require('./dist/dataservice');
+var ResponseBuilder = require('./dist/responserBuilder');
+var FoodLineInterpret = require('./dist/foodLineInterpret');
+
 
 // Connection URL
 var url =  process.env.MONGO_CONN_URL || "mongodb://localhost:27017/myproject";
@@ -207,7 +209,7 @@ bot.dialog('/logfood', [
         var tsDate =new  Date(session.message.timestamp);
         var inputLine = results.response;
         var foodItems = inputLine.split(",");
-        var foodDate = getFoodDate(inputLine);
+        var foodDate =  FoodLineInterpret.getFoodDate(inputLine);
         var foodArray = [];
         for(var item in foodItems)
         {           
@@ -220,8 +222,8 @@ bot.dialog('/logfood', [
                 item:foodItems[item],
                 qty:0,
                 units:"",
-                foodValue:getPoints(foodItems[item]),
-                calories:getCalories(foodItems[item])
+                foodValue: FoodLineInterpret.getFoodValue(foodItems[item]),
+                calories:FoodLineInterpret.getCalories(foodItems[item])
             };
             foodArray.push(foodRecord);
         }
@@ -336,125 +338,7 @@ bot.dialog('/weather', [
 ]);
 bot.beginDialogAction('weather', '/weather');   // <-- no 'matches' option means this can only be triggered by a button.
 
-// Interpretation - will swith to LUIS soon
-
-var getPoints = function(foodEntryText) {
-    var pos = foodEntryText.indexOf("p=") ;
-    if(pos >=0)
-    {
-        val = foodEntryText.substring(pos+2, pos+4);
-        return val;
-    }
-    
-    return 0;
-    
-}
-
-
-var getNextKVP = function(entryText) {
-
-    var kvpParts = entryText.split(":");
-    var kvp;
-    if(kvpParts.length > 1 ) {
-        var kvp = {
-                key: kvpParts[0], 
-                value:  getNextWord(kvpParts[1])
-        }
-
-    }
-    return kvp;
-}
-
-module.exports.getNextKVP = getNextKVP;
-
-var getNextWord = function(text) {
-    // wordbreaks are " ", "," or end of text
-    var word = "";
-    for (var i =0; i < text.length; i++) {
-        if (text[i] == " " || text[i] == ",") {
-            break;
-        }
-        word += text[i];
-    }
-    return word;
-}
 
 
 
-module.exports.getNextWord = getNextWord;
-
-var getFoodDate = function(foodEntryText) {
-    var pos = foodEntryText.indexOf("d:") ;
-    if(pos >=0)
-    {
-        var kvp = getNextKVP(foodEntryText.substring(pos));
-        val = new Date( kvp.value);
-        return val;
-    }
-    
-    return new Date();
-    
-}
-module.exports.getFoodDate = getFoodDate;
-
-var getCalories = function(foodEntryText) {
-    var pos = foodEntryText.indexOf("c=") ;
-    if(pos >=0)
-    {
-        val = foodEntryText.substring(pos+2, pos+5);
-        return val;
-    }
-    
-    return 0;
-    
-}
-
-
-//  Mongo CRUD functions
-var insertDocuments = function(db, foodRecord, callback) {
-  // Get the documents collection
-  var collection = db.collection('foodrecords');
-  // Insert some documents
-  collection.insertMany(
-    foodRecord
-  , function(err, result) {
-    assert.equal(err, null);
-    assert.equal(foodRecord.length, result.result.n);
-    assert.equal(foodRecord.length, result.ops.length);
-    console.log("Inserted 1 documents into the collection");
-    callback(result);
-  });
-}
-
-
-var findDocuments = function(db, session, startDate, endDate, callback) {
-  // Get the documents collection
-  var collection = db.collection('foodrecords');
-  // Find some documents
-  collection.find({ "timestamp" : { "$gte" : new Date(startDate), "$lt" : new Date(endDate) }}).toArray(function(err, docs) {
-    assert.equal(err, null);
-    callback(docs);
-  });
-}
-
-
-// Date functions
-function convertUTCDateToLocalDate(date) {
-
-    var offset = date.getTimezoneOffset()*60*1000;
-    if(offset ==0)
-    {
-        // force it to work on skype for US Central grrrr.
-        offset = 6*3600000;
-    }
-    var newDate = new Date(date.getTime()-offset);
-
-    //console.log('date: %s  offset: %s  newDate %s',date, offset, newDate); 
-    //var offset = date.getTimezoneOffset() / 60;
-    //var hours = date.getHours();
-
-    //newDate.setHours(hours - offset);
-
-    return newDate;   
-}
 

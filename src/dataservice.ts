@@ -1,6 +1,7 @@
 //  basic dataservices for Foody
 
 import { FoodRecord } from "./foodyTypes";
+import { Kvp } from "./foodyTypes";
 
 
 var MongoClient = require('mongodb').MongoClient

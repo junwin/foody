@@ -13,8 +13,10 @@
                 calories: number;
             };
 
-
-///module.exports.FoodRecord = FoodRecord;
+export interface Kvp {
+    key: string;
+    value: string
+};
 
 
            

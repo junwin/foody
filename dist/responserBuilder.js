@@ -1,18 +1,17 @@
+// responseBuilder
 "use strict";
 var buildResponse = function (docs) {
     var responseMsg = "";
     var totFoodValue = 0;
     var currDay = -1;
     for (var i in docs) {
-        var recordDate = new Date(docs[i].foodRecordDate);
-        var tl = recordDate;
-        //var tl = convertUTCDateToLocalDate(recordDate);
+        var recordDate = convertUTCDateToLocalDate(docs[i].foodRecordDate);
         if (currDay == -1) {
-            currDay = tl.getDay();
+            currDay = recordDate.getDay();
             responseMsg = responseMsg + recordDate.toDateString() + "\n\n";
         }
-        if (currDay != tl.getDay()) {
-            currDay = tl.getDay();
+        if (currDay != recordDate.getDay()) {
+            currDay = recordDate.getDay();
             responseMsg = responseMsg + "foodValue:" + totFoodValue + "\n\n";
             responseMsg = responseMsg + recordDate.toDateString() + "\n\n";
             totFoodValue = 0;
@@ -27,4 +26,18 @@ var buildResponse = function (docs) {
     return responseMsg;
 };
 module.exports.buildResponse = buildResponse;
+// Date functions
+function convertUTCDateToLocalDate(date) {
+    var offset = date.getTimezoneOffset() * 60 * 1000;
+    if (offset == 0) {
+        // force it to work on skype for US Central grrrr.
+        offset = 6 * 3600000;
+    }
+    var newDate = new Date(date.getTime() - offset);
+    //console.log('date: %s  offset: %s  newDate %s',date, offset, newDate); 
+    //var offset = date.getTimezoneOffset() / 60;
+    //var hours = date.getHours();
+    //newDate.setHours(hours - offset);
+    return newDate;
+}
 //# sourceMappingURL=responserBuilder.js.map
