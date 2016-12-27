@@ -1,7 +1,5 @@
-/*
-
-describe("Foody", function() {
-  var foodyApp = require('../../../app');
+describe("FoodLineInterpret", function() {
+  var foodyApp = require('../../../dist/foodLineInterpret');
   
   beforeEach(function() {
     
@@ -31,8 +29,13 @@ describe("Foody", function() {
     var foodDate = foodyApp.getFoodDate("blah blah d:5/25/16 blah");
     expect(foodDate.getUTCDate()).toEqual(new Date("5/25/16").getUTCDate());
   });
+   it("should be able find a calorie value", function() {
+    var calories = foodyApp.getCalories("blah blah d:5/25/16 blah p=99 c=230");
+    expect(calories==230);
+  });
+  it("should be able find a points value", function() {
+    var points = foodyApp.getFoodValue("blah blah d:5/25/16 blah p=99 c=230");
+    expect(points == 99);
+  });
   
 });
-
-
-*/

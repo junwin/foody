@@ -27,7 +27,8 @@
             "type": "node",
             "args": [
                 "test/spec/dataservice/dataserviceSpec.js",
-                "test/spec/foody/foodySpec.js"
+                "test/spec/foody/foodySpec.js",
+                "test/spec/foody/foodLineInterpretSpec.js"                
             ]
         }
     ]

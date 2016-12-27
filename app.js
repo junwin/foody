@@ -6,7 +6,7 @@
 var restify = require('restify');
 var builder = require('./core/');
 var MongoClient = require('mongodb').MongoClient
-  , assert = require('assert');
+    , assert = require('assert');
 
 var DS = require('./dist/dataservice');
 var ResponseBuilder = require('./dist/responserBuilder');
@@ -14,7 +14,7 @@ var FoodLineInterpret = require('./dist/foodLineInterpret');
 
 
 // Connection URL
-var url =  process.env.MONGO_CONN_URL || "mongodb://localhost:27017/myproject";
+var url = process.env.MONGO_CONN_URL || "mongodb://localhost:27017/myproject";
 //
 
 //=========================================================
@@ -24,14 +24,14 @@ var url =  process.env.MONGO_CONN_URL || "mongodb://localhost:27017/myproject";
 // Setup Restify Server
 var server = restify.createServer();
 server.listen(process.env.port || process.env.PORT || 3978, function () {
-   console.log('%s listening to %s', server.name, server.url); 
+    console.log('%s listening to %s', server.name, server.url);
 });
 
-MongoClient.connect(url, function(err, db) {
-  assert.equal(null, err);
-  console.log("Connected successfully to server");
+MongoClient.connect(url, function (err, db) {
+    assert.equal(null, err);
+    console.log("Connected successfully to server");
 });
-  
+
 // Create chat bot
 var connector = new builder.ChatConnector({
     appId: process.env.MICROSOFT_APP_ID,
@@ -48,10 +48,10 @@ function getFoodRecs(req, res, next) {
     var endDate = Date.now();
     var startDate = endDate - numberOfDays * 24 * 3600000;
 
-    DS.getFoodItems(url, req.params.userId, startDate, endDate, function(docs) {    
-         res.send(JSON.stringify(docs));
+    DS.getFoodItems(url, req.params.userId, startDate, endDate, function (docs) {
+        res.send(JSON.stringify(docs));
     });
-  next();
+    next();
 }
 
 
@@ -61,15 +61,15 @@ function getFoodRecs(req, res, next) {
 //=========================================================
 
 bot.on('conversationUpdate', function (message) {
-   // Check for group conversations
+    // Check for group conversations
     if (message.address.conversation.isGroup) {
         // Send a hello message when bot is added
         if (message.membersAdded) {
             message.membersAdded.forEach(function (identity) {
                 if (identity.id === message.address.bot.id) {
                     var reply = new builder.Message()
-                            .address(message.address)
-                            .text("Hello everyone!");
+                        .address(message.address)
+                        .text("Hello everyone!");
                     bot.send(reply);
                 }
             });
@@ -93,8 +93,8 @@ bot.on('contactRelationUpdate', function (message) {
     if (message.action === 'add') {
         var name = message.user ? message.user.name : null;
         var reply = new builder.Message()
-                .address(message.address)
-                .text("Hello %s... Thanks very much for adding me. Say help for options.", name || 'there');
+            .address(message.address)
+            .text("Hello %s... Thanks very much for adding me. Say help for options.", name || 'there');
         bot.send(reply);
     } else {
         // delete their data
@@ -134,14 +134,14 @@ bot.use({
         } else {
             if (session.userData.isLogging) {
                 console.log('Message Received: ', session.message.text);
-               
+
             }
             //console.log('Message Received: ', session.message.text);
-             if(session.message.text.indexOf('@k3node')>=0)   {
-                    var startPos = session.message.text.indexOf('@k3node') + 13;
-                    session.message.text = session.message.text.substring(startPos);
-             }
-             //console.log('Message Received: ', session.message.text);
+            if (session.message.text.indexOf('@k3node') >= 0) {
+                var startPos = session.message.text.indexOf('@k3node') + 13;
+                session.message.text = session.message.text.substring(startPos);
+            }
+            //console.log('Message Received: ', session.message.text);
             next();
         }
     }
@@ -155,10 +155,10 @@ bot.dialog('/', [
     function (session) {
         // Send a greeting and show help.
         var card = new builder.HeroCard(session)
-            .title("Foody - the food tracking bot (Pre-Release 0.1 fun edition)")
+            .title("Foody - the food tracking bot (Pre-Release 0.2 fun edition)")
             .text("track the things you eat the easy way.")
             .images([
-                 builder.CardImage.create(session, "http://docs.botframework.com/images/demo_bot_image.png")
+                builder.CardImage.create(session, "http://docs.botframework.com/images/demo_bot_image.png")
             ]);
         var msg = new builder.Message(session).attachments([card]);
         session.send(msg);
@@ -176,7 +176,7 @@ bot.dialog('/', [
 ]);
 bot.dialog('/menu', [
     function (session) {
-        builder.Prompts.choice(session, "What would you todo?", "logfood|show|(quit)");
+        builder.Prompts.choice(session, "What would you todo?", "logfood|show|delete|(quit)");
     },
     function (session, results) {
         if (results.response && results.response.entity != '(quit)') {
@@ -206,28 +206,12 @@ bot.dialog('/logfood', [
         builder.Prompts.text(session, "Tell me the food items, use a comma to separate multiple items.");
     },
     function (session, results) {
-        var tsDate =new  Date(session.message.timestamp);
+         var tsDate = new Date(session.message.timestamp);
         var inputLine = results.response;
-        var foodItems = inputLine.split(",");
-        var foodDate =  FoodLineInterpret.getFoodDate(inputLine);
-        var foodArray = [];
-        for(var item in foodItems)
-        {           
-            var foodRecord = {
-                userId:session.message.user.id,   
-                userName: session.message.user.name,       
-                timestamp:tsDate,
-                foodRecordDate:foodDate,
-                text:foodItems[item],
-                item:foodItems[item],
-                qty:0,
-                units:"",
-                foodValue: FoodLineInterpret.getFoodValue(foodItems[item]),
-                calories:FoodLineInterpret.getCalories(foodItems[item])
-            };
-            foodArray.push(foodRecord);
-        }
-        
+      
+        var foodArray = FoodLineInterpret.getFoodRecords(inputLine, tsDate, session.message.user.id, session.message.user.name)
+       
+
         msg = session.message.user.id + " : " + session.message.user.name + " : " + session.message.timestamp + " : " + results.response;
         session.send("You entered .'%s'", msg);
 
@@ -241,19 +225,19 @@ bot.dialog('/show', [
     function (session, results) {
 
         var numberOfDays = 2;
-        if(session.message.text.indexOf("week")>=0) {
+        if (session.message.text.indexOf("week") >= 0) {
             numberOfDays = 7;
         }
-        if(session.message.text.indexOf("day")>=0) {
+        if (session.message.text.indexOf("day") >= 0) {
             numberOfDays = 1;
         }
         var endDate = Date.now();
         var startDate = endDate - numberOfDays * 24 * 3600000;
-        DS.getFoodItems(url, session.message.user.id, startDate, endDate, function(docs){
+        DS.getFoodItems(url, session.message.user.id, startDate, endDate, function (docs) {
             //var responseMsg = "";
             var responseMsg = ResponseBuilder.buildResponse(docs);
-                 
-            session.send(responseMsg)  ; 
+
+            session.send(responseMsg);
             //db.close();
         });
 
@@ -262,81 +246,38 @@ bot.dialog('/show', [
 ]);
 
 
+bot.dialog('/delete', [
+    function (session) {
+        builder.Prompts.text(session, "Sure, just tell me the food date you want to delete.");
+    },
+    function (session, results) {
+        var foodDate = new Date(results.response);
+
+        DS.deleteFoodItemsOnDate(url, session.message.user.id, foodDate, function () {
+
+            session.send("I deleted any entries for:" + foodDate);
+
+        });
+
+        session.endDialog();
+    }
+]);
 
 
 
-bot.dialog('/receipt', [
-    function (session) {       
-        // Send a receipt without images
-        cost1 =  250*elapsed(session);
-        item1 = "Chicago:" + elapsed(session);
-        cost2 =  300*elapsed(session);
-        item2 = "New York:" + elapsed(session);
-        msg = new builder.Message(session)
+bot.dialog('/signin', [
+    function (session) {
+        // Send a signin 
+        var msg = new builder.Message(session)
             .attachments([
-                new builder.ReceiptCard(session)
-                    .title("Recipient's Name")
-                    .items([
-                        
-                        builder.ReceiptItem.create(session, cost1, item1),
-                        builder.ReceiptItem.create(session, cost2, item2)
-                    ])
-                    .facts([
-                        builder.Fact.create(session, "1234567898", "Meeting Id"),
-                        builder.Fact.create(session, "HH1234PRJ", "CostCenter")
-                    ])
-                    .tax("$0.00")
-                    .total("$"+(cost1+cost2))
+                new builder.SigninCard(session)
+                    .text("You must first signin to your account.")
+                    .button("signin", "http://example.com/")
             ]);
         session.endDialog(msg);
     }
 ]);
 
-bot.dialog('/signin', [ 
-    function (session) { 
-        // Send a signin 
-        var msg = new builder.Message(session) 
-            .attachments([ 
-                new builder.SigninCard(session) 
-                    .text("You must first signin to your account.") 
-                    .button("signin", "http://example.com/") 
-            ]); 
-        session.endDialog(msg); 
-    } 
-]); 
-
-
-bot.dialog('/actions', [
-    function (session) { 
-        session.send("Bots can register global actions, like the 'help' & 'goodbye' actions, that can respond to user input at any time. You can even bind actions to buttons on a card.");
-
-        var msg = new builder.Message(session)
-            .textFormat(builder.TextFormat.xml)
-            .attachments([
-                new builder.HeroCard(session)
-                    .title("Hero Card")
-                    .subtitle("Space Needle")
-                    .text("The <b>Space Needle</b> is an observation tower in Seattle, Washington, a landmark of the Pacific Northwest, and an icon of Seattle.")
-                    .images([
-                        builder.CardImage.create(session, "https://upload.wikimedia.org/wikipedia/commons/thumb/7/7c/Seattlenighttimequeenanne.jpg/320px-Seattlenighttimequeenanne.jpg")
-                    ])
-                    .buttons([
-                        builder.CardAction.dialogAction(session, "weather", "Seattle, WA", "Current Weather")
-                    ])
-            ]);
-        session.send(msg);
-
-        session.endDialog("The 'Current Weather' button on the card above can be pressed at any time regardless of where the user is in the conversation with the bot. The bot can even show the weather after the conversation has ended.");
-    }
-]);
-
-// Create a dialog and bind it to a global action
-bot.dialog('/weather', [
-    function (session, args) {
-        session.endDialog("The weather in %s is 71 degrees and raining.", args.data);
-    }
-]);
-bot.beginDialogAction('weather', '/weather');   // <-- no 'matches' option means this can only be triggered by a button.
 
 
 

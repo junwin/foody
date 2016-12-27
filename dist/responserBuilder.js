@@ -5,7 +5,8 @@ var buildResponse = function (docs) {
     var totFoodValue = 0;
     var currDay = -1;
     for (var i in docs) {
-        var recordDate = convertUTCDateToLocalDate(docs[i].foodRecordDate);
+        //var recordDate = convertUTCDateToLocalDate(docs[i].foodRecordDate);
+        var recordDate = docs[i].foodRecordDate;
         if (currDay == -1) {
             currDay = recordDate.getDay();
             responseMsg = responseMsg + recordDate.toDateString() + "\n\n";
