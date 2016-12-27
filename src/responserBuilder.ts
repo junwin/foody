@@ -9,24 +9,28 @@ var buildResponse = function (docs: FoodRecord[]) {
     let currDay = -1;
 
     for (var i in docs) {
-        //var recordDate = convertUTCDateToLocalDate(docs[i].foodRecordDate);
-        var recordDate = docs[i].foodRecordDate;
+        try {
+            var recordDate = docs[i].foodRecordDate;
 
-        if (currDay == -1) {
-            currDay = recordDate.getDay();
-            responseMsg = responseMsg + recordDate.toDateString() + "\n\n";
+            if (currDay == -1) {
+                currDay = recordDate.getDay();
+                responseMsg = responseMsg + recordDate.toDateString() + "\n\n";
+            }
+            if (currDay != recordDate.getDay()) {
+                currDay = recordDate.getDay();
+                responseMsg = responseMsg + "foodValue:" + totFoodValue + "\n\n";
+                responseMsg = responseMsg + recordDate.toDateString() + "\n\n";
+                totFoodValue = 0;
+            }
+
+            totFoodValue += docs[i].foodValue;
+
+            //responseMsg = responseMsg + convertUTCDateToLocalDate(recordDate).toDateString() + ": " + docs[i].text + "\n\n";
+            responseMsg = responseMsg + docs[i].text + "\n\n";
         }
-        if (currDay != recordDate.getDay()) {
-            currDay = recordDate.getDay();
-            responseMsg = responseMsg + "foodValue:" + totFoodValue + "\n\n";
-            responseMsg = responseMsg + recordDate.toDateString() + "\n\n";
-            totFoodValue = 0;
+        catch (e) {
+
         }
-
-        totFoodValue += docs[i].foodValue;
-
-        //responseMsg = responseMsg + convertUTCDateToLocalDate(recordDate).toDateString() + ": " + docs[i].text + "\n\n";
-        responseMsg = responseMsg + docs[i].text + "\n\n";
 
     }
     if (totFoodValue > 0) {

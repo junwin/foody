@@ -1,10 +1,10 @@
 // FoodLineInterpret
 "use strict";
-exports.getFoodRecords = function (inputText, timestamp, userId, userName) {
+exports.getFoodRecords = function (inputText, timestamp, foodDate, userId, userName) {
     var tsDate = timestamp;
     var inputLine = inputText;
     var foodItems = inputLine.split(",");
-    var foodDate = exports.getFoodDate(inputLine, timestamp);
+    //var foodDate = getFoodDate(inputLine, timestamp);
     var foodRecords = [];
     for (var item in foodItems) {
         var foodRecord = {

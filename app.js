@@ -176,7 +176,7 @@ bot.dialog('/', [
 ]);
 bot.dialog('/menu', [
     function (session) {
-        builder.Prompts.choice(session, "What would you todo?", "logfood|show|delete|(quit)");
+        builder.Prompts.choice(session, "What would you todo?", "log|show|delete|(quit)");
     },
     function (session, results) {
         if (results.response && results.response.entity != '(quit)') {
@@ -199,18 +199,50 @@ bot.dialog('/help', [
     }
 ]);
 
+bot.dialog('/log', [function (session) {
+    builder.Prompts.confirm(session, "Prompts.confirm()\n\nAre you logging food for today?");
+},
+function (session, results) {
+    if (!results.response) {
+        // ned to get the date
+        builder.Prompts.time(session, "Sure, enter a time like 'Monday at 7am' that you want to use");
 
-bot.dialog('/logfood', [
+    }
+    else {
+        session.userData.foodDate = new Date();
+        session.userData.foodDate.setHours(0, 0, 0, 0);
+        session.beginDialog('/foodlog');
+    }
+},
+function (session, results) {
+    //session.send("Recognized Entity: %s", JSON.stringify(results.response));
+    if (results.childId == "BotBuilder:Prompts") {
+        session.userData.foodDate = results.response.resolution.start;
+        session.userData.foodDate.setHours(0, 0, 0, 0);
+        session.beginDialog('/foodlog');
+    }
+    else {
+        session.endDialog();
+    }
+    //builder.Prompts.attachment(session, "Prompts.attachment()\n\nYour bot can wait on the user to upload an image or video. Send me an image and I'll send it back to you.");
+
+    //if (session.message.timestamp.length > 0) {
+    //    var tsDate = new Date(session.message.timestamp);
+    //}
+
+}]);
+
+bot.dialog('/foodlog', [
     function (session) {
         //session.send("Just follow the prompts and you can quit at any time by saying 'cancel'.");
         builder.Prompts.text(session, "Tell me the food items, use a comma to separate multiple items.");
     },
     function (session, results) {
-         var tsDate = new Date(session.message.timestamp);
+        var tsDate = new Date(session.message.timestamp);
         var inputLine = results.response;
-      
-        var foodArray = FoodLineInterpret.getFoodRecords(inputLine, tsDate, session.message.user.id, session.message.user.name)
-       
+        var foodDate = new Date(session.userData.foodDate);
+        var foodArray = FoodLineInterpret.getFoodRecords(inputLine, tsDate, foodDate, session.message.user.id, session.message.user.name)
+
 
         msg = session.message.user.id + " : " + session.message.user.name + " : " + session.message.timestamp + " : " + results.response;
         session.send("You entered .'%s'", msg);
@@ -277,9 +309,3 @@ bot.dialog('/signin', [
         session.endDialog(msg);
     }
 ]);
-
-
-
-
-
-

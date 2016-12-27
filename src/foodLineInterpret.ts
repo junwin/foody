@@ -6,11 +6,11 @@ import { FoodRecord } from "./foodyTypes";
 import { Kvp } from "./foodyTypes";
 
 
-export var getFoodRecords = function (inputText: string, timestamp: Date, userId: string, userName: string): FoodRecord[] {
+export var getFoodRecords = function (inputText: string, timestamp: Date, foodDate: Date, userId: string, userName: string): FoodRecord[] {
     var tsDate = timestamp;
     var inputLine = inputText;
     var foodItems = inputLine.split(",");
-    var foodDate = getFoodDate(inputLine, timestamp);
+    //var foodDate = getFoodDate(inputLine, timestamp);
     var foodRecords = [];
     for (var item in foodItems) {
         var foodRecord = {
